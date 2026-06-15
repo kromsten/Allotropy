@@ -1,0 +1,115 @@
+{
+  "type": "v1",
+  "root": 0,
+  "definitions": [
+    {
+      "name": "cw20_base_msg_QueryMsg",
+      "type": "enum",
+      "cases": {
+        "all_accounts": {
+          "description": "Only with \"enumerable\" extension\nReturns all accounts that have balances. Supports pagination.",
+          "type": "named",
+          "properties": {
+            "limit": {
+              "value": 4
+            },
+            "start_after": {
+              "value": 2
+            }
+          }
+        },
+        "all_allowances": {
+          "description": "Only with \"enumerable\" extension (and \"allowances\")\nReturns all allowances this owner has approved. Supports pagination.",
+          "type": "named",
+          "properties": {
+            "limit": {
+              "value": 4
+            },
+            "owner": {
+              "value": 1
+            },
+            "start_after": {
+              "value": 2
+            }
+          }
+        },
+        "all_spender_allowances": {
+          "description": "Only with \"enumerable\" extension (and \"allowances\")\nReturns all allowances this spender has been granted. Supports pagination.",
+          "type": "named",
+          "properties": {
+            "limit": {
+              "value": 4
+            },
+            "spender": {
+              "value": 1
+            },
+            "start_after": {
+              "value": 2
+            }
+          }
+        },
+        "allowance": {
+          "description": "Only with \"allowance\" extension.\nReturns how much spender can use from owner account, 0 if unset.",
+          "type": "named",
+          "properties": {
+            "owner": {
+              "value": 1
+            },
+            "spender": {
+              "value": 1
+            }
+          }
+        },
+        "balance": {
+          "description": "Returns the current balance of the given address, 0 if unset.",
+          "type": "named",
+          "properties": {
+            "address": {
+              "value": 1
+            }
+          }
+        },
+        "download_logo": {
+          "description": "Only with \"marketing\" extension\nDownloads the embedded logo data (if stored on chain). Errors if no logo data is stored for this\ncontract.",
+          "type": "named",
+          "properties": {}
+        },
+        "marketing_info": {
+          "description": "Only with \"marketing\" extension\nReturns more metadata on the contract to display in the client:\n- description, logo, project url, etc.",
+          "type": "named",
+          "properties": {}
+        },
+        "minter": {
+          "description": "Only with \"mintable\" extension.\nReturns who can mint and the hard cap on maximum tokens after minting.",
+          "type": "named",
+          "properties": {}
+        },
+        "token_info": {
+          "description": "Returns metadata on the contract - name, decimals, supply, etc.",
+          "type": "named",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "name": "String",
+      "type": "string"
+    },
+    {
+      "name": "core::option::Option<alloc::string::String>",
+      "type": "optional",
+      "inner": 1
+    },
+    {
+      "name": "u32",
+      "type": "integer",
+      "precision": 32,
+      "signed": false
+    },
+    {
+      "name": "core::option::Option<u32>",
+      "type": "optional",
+      "inner": 3
+    }
+  ]
+}

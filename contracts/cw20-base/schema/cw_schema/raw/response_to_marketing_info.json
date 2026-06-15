@@ -1,0 +1,70 @@
+{
+  "type": "v1",
+  "root": 0,
+  "definitions": [
+    {
+      "name": "cw20_query_MarketingInfoResponse",
+      "type": "struct",
+      "properties": {
+        "description": {
+          "description": "A longer description of the token and it's utility. Designed for tooltips or such",
+          "value": 2
+        },
+        "logo": {
+          "description": "A link to the logo, or a comment there is an on-chain logo stored",
+          "value": 4
+        },
+        "marketing": {
+          "description": "The address (if any) who can update this data structure",
+          "value": 6
+        },
+        "project": {
+          "description": "A URL pointing to the project behind this token.",
+          "value": 2
+        }
+      }
+    },
+    {
+      "name": "String",
+      "type": "string"
+    },
+    {
+      "name": "core::option::Option<alloc::string::String>",
+      "type": "optional",
+      "inner": 1
+    },
+    {
+      "name": "cw20_logo_LogoInfo",
+      "description": "This is used to display logo info, provide a link or inform there is one\nthat can be downloaded from the blockchain itself",
+      "type": "enum",
+      "cases": {
+        "embedded": {
+          "description": "There is an embedded logo on the chain, make another call to download it.",
+          "type": "unit"
+        },
+        "url": {
+          "description": "A reference to an externally hosted logo. Must be a valid HTTP or HTTPS URL.",
+          "type": "tuple",
+          "items": [
+            1
+          ]
+        }
+      }
+    },
+    {
+      "name": "core::option::Option<cw20::logo::LogoInfo>",
+      "type": "optional",
+      "inner": 3
+    },
+    {
+      "name": "cosmwasm_std_addresses_Addr",
+      "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no\nassumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways\n1. Use `Addr::unchecked(input)`\n2. Use `let checked: Addr = deps.api.addr_validate(input)?`\n3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?`\n4. Deserialize from JSON. This must only be done from JSON that was validated before\nsuch as a contract's state. `Addr` must not be used in messages sent by the user\nbecause this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create\na mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String`\ninstance.",
+      "type": "address"
+    },
+    {
+      "name": "core::option::Option<cosmwasm_std::addresses::Addr>",
+      "type": "optional",
+      "inner": 5
+    }
+  ]
+}

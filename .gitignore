@@ -43,3 +43,5 @@ ts
 e2e
 
 node_modules
+/.svelte-kit
+/build

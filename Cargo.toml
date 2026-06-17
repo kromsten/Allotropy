@@ -8,14 +8,15 @@ resolver = "2"
 
 [workspace.package]
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 authors = ["Kromsten <kromsten@megarock.app>"]
 repository = ""
 license = ""
 
+
 [workspace.dependencies]
-cosmwasm-schema = { version = "3.0.7", default-features = false}
-cw-schema = { version = "3.0.7" }
+cosmwasm-schema = { version = "^3.0.0", default-features = false}
+cw-schema = { version = "^3.0.0" }
 cw-storage-plus = { version = "3.0.1" }
 cw-controllers = { version = "3.0.0" }
 cw-utils = { version = "3.0.0" }
@@ -34,6 +35,13 @@ cw20-bonding = { path = "contracts/cw20-bonding", features = ["library"] }
 
 cw20 = { path = "packages/cw20" }
 
+
+# [patch.crates-io]
+# darling         = { version = "0.20.0" }
+# darling_core    = { version = "0.20.0" }
+# darling_macro   = { version = "0.20.0" }
+# serde_with      = { version = "3.12.0" }
+# serde_with_macros = { version = "3.12.0" }
 
 [profile.release]
 lto = true

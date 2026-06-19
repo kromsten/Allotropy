@@ -1,4 +1,5 @@
-FROM cosmos/gaia:latest
+FROM ghcr.io/cosmos/gaia:na-build-arm64
+
 
 COPY --chmod=755 entry-point.sh /data/entry-point.sh
 

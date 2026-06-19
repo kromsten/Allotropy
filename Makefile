@@ -2,15 +2,15 @@
 
 GAS_LIMIT ?= "150000000"
 OPTIMIZER_SUFFIX := $(shell if [ "$$(uname)" = "Darwin" ]; then echo "-arm64"; else echo ""; fi)
-TEST_ADDRS ?= $(shell jq -r '.[].address' ./typescript/config/accounts.json | tr '\n' ' ')
-
+TEST_ADDRS ?= $(shell jq -r '.[].address' ./config/accounts.json | tr '\n' ' ')
+CHAIN_ID ?= gaia_9001-1
 
 local-chain: build-local-image
 	docker kill gaia || true
 	docker volume rm -f gaia_data
 	docker run --rm -d --name gaia \
 		-e DENOM=uatom \
-		-e CHAINID=testing \
+		-e CHAINID=$(CHAIN_ID) \
 		-e GAS_LIMIT=$(GAS_LIMIT) \
 		-p 1317:1317 \
 		-p 26656:26656 \
@@ -32,7 +32,7 @@ optimize:
 
 
 build:
-	RUSTFLAGS='-C link-arg=-s' cargo build  --target wasm32-unknown-unknown --release --lib
+	cargo build
 
 lint:
 	cargo clippy --all-targets -- -D warnings

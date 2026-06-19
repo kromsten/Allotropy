@@ -1,7 +1,7 @@
 import { createWasmAminoConverters, setupWasmExtension, SigningCosmWasmClient, wasmTypes } from '@cosmjs/cosmwasm-stargate';
 import { Decimal } from '@cosmjs/math';
 import { DirectSecp256k1HdWallet, type GeneratedType, Registry } from '@cosmjs/proto-signing';
-import { AminoTypes, createDefaultAminoConverters, defaultRegistryTypes, QueryClient, setupAuthzExtension, setupBankExtension } from '@cosmjs/stargate';
+import { AminoTypes, createDefaultAminoConverters, defaultRegistryTypes, GasPrice, QueryClient, setupAuthzExtension, setupBankExtension } from '@cosmjs/stargate';
 import { Comet38Client } from '@cosmjs/tendermint-rpc';
 import { getChainConfig, getContractConfig, loadTestAccounts } from './config';
 import type { ChainConfig, ChainQueryClient, Account, ChainData } from './types';
@@ -22,6 +22,8 @@ const aminoTypes = new AminoTypes({
 	...createDefaultAminoConverters(),
 	...createWasmAminoConverters(),
 });
+
+const registry : Registry = new Registry(registryTypes)
 
 // Cache for multiple wallets, clients, and chain data
 const walletCache: Record<string, DirectSecp256k1HdWallet> = {};
@@ -103,7 +105,8 @@ export const getClients = async (
 
 		client = await SigningCosmWasmClient.createWithSigner(cometClient, wallet, {
 			gasPrice: createGasPrice(config.denom, config.gas_price.toString()),
-			registry: new Registry(registryTypes),
+			// @ts-ignore
+			registry,
 			aminoTypes
 		});
 
@@ -155,6 +158,7 @@ export const getAddressClient = async (
 		const cometClient = await getCometClient(config);
 		client = await SigningCosmWasmClient.createWithSigner(cometClient, wallet, {
 			gasPrice: createGasPrice(config.denom, config.gas_price.toString()),
+			// @ts-ignore
 			registry: new Registry(registryTypes),
 			aminoTypes
 		});
@@ -163,7 +167,4 @@ export const getAddressClient = async (
 	return client;
 };
 
-const createGasPrice = (denom: string, amount?: string) => ({
-	amount: Decimal.fromUserInput(amount ?? '0.025', 100),
-	denom,
-});
+const createGasPrice = (denom: string, amount?: string)   => GasPrice.fromString(`${amount ?? '0.025'}${denom}`);	

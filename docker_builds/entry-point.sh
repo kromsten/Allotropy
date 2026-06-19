@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
+MONIKER=${MONIKER:-krom}
+CHAINID=${CHAINID:-gaia_9001-1}
 BINARY=${BINARY:-gaiad}
-FOLDER=${FOLDER:-gaiad}
-CHAINID=${CHAINID:-testing}
+FOLDER=${FOLDER:-gaia}
 DENOM=${DENOM:-uatom}
 BLOCK_GAS_LIMIT=${GAS_LIMIT:-150000000}
 
@@ -12,7 +13,7 @@ SIMULATION_GAS_LIMIT=${SIMULATION_GAS_LIMIT:-5000000000}
 MEMORY_CACHE_SIZE=${MEMORY_CACHE_SIZE:-1000}
 
 # Build genesis file incl account for each address passed in
-coins="5000000000000$DENOM"
+coins="500000000000$DENOM"
 $BINARY init --chain-id $CHAINID $CHAINID
 $BINARY keys add validator --keyring-backend="test"
 $BINARY genesis add-genesis-account validator $coins --keyring-backend="test"

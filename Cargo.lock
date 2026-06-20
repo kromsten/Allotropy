@@ -615,6 +615,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "cw20-liquid-staking"
+version = "0.14.2"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-controllers",
+ "cw-storage-plus",
+ "cw-utils",
+ "cw2",
+ "cw20",
+ "cw20-base",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "cw20-staking"
 version = "0.14.2"
 dependencies = [

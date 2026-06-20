@@ -32,16 +32,11 @@ semver = { version = "1.0.28" }
 
 cw20-base = { path = "contracts/cw20-base", features = ["library"] }
 cw20-bonding = { path = "contracts/cw20-bonding", features = ["library"] }
+cw20-staking = { path = "contracts/cw20-staking", features = ["library"] }
+cw20-liquid-staking = { path = "contracts/cw20-liquid-staking", features = ["library"] }
 cw20-liquid-bond = { path = "contracts/cw20-liquid-bond", features = ["library"] }
 cw20 = { path = "packages/cw20" }
 
-
-# [patch.crates-io]
-# darling         = { version = "0.20.0" }
-# darling_core    = { version = "0.20.0" }
-# darling_macro   = { version = "0.20.0" }
-# serde_with      = { version = "3.12.0" }
-# serde_with_macros = { version = "3.12.0" }
 
 [profile.release]
 lto = true

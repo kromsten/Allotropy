@@ -37,12 +37,6 @@ export interface AddressResponse {
 	address: string;
 }
 
-export interface GameInfoResponse {
-	game_info: {
-		contract: string;
-		phase: string;
-	} | null;
-}
 
 export interface AdminResponse {
 	admin: string;

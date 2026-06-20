@@ -4,7 +4,6 @@ import {
 	SigningCosmWasmClient,
 	wasmTypes
 } from '@cosmjs/cosmwasm-stargate';
-import { Decimal } from '@cosmjs/math';
 import { DirectSecp256k1HdWallet, type GeneratedType, Registry } from '@cosmjs/proto-signing';
 import {
 	AminoTypes,

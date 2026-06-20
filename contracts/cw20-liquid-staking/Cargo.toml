@@ -18,6 +18,8 @@ crate-type = ["cdylib", "rlib"]
 library = []
 
 [dependencies]
+cw20-staking = { workspace = true }
+
 cw-utils = { workspace = true }
 cw2 = { workspace = true }
 cw20 = { workspace = true }
@@ -26,4 +28,6 @@ cw20-base = { workspace = true }
 cw-storage-plus = { workspace = true }
 thiserror = { workspace = true }
 cosmwasm-schema = { workspace = true }
-cosmwasm-std = { features = ["staking"], workspace = true }
+cosmwasm-std = { features = ["staking", "cosmwasm_2_0"], workspace = true }
+prost = { version = "0.12.3", default-features = false, features = ["prost-derive"] }
+prost-types = { version = "0.12.3", default-features = false }

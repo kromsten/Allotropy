@@ -32,6 +32,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
+name = "anyhow"
+version = "1.0.102"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
+
+[[package]]
 name = "ark-bls12-381"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -57,7 +63,7 @@ dependencies = [
  "educe",
  "fnv",
  "hashbrown 0.15.5",
- "itertools",
+ "itertools 0.13.0",
  "num-bigint",
  "num-integer",
  "num-traits",
@@ -78,7 +84,7 @@ dependencies = [
  "arrayvec",
  "digest",
  "educe",
- "itertools",
+ "itertools 0.13.0",
  "num-bigint",
  "num-traits",
  "paste",
@@ -505,7 +511,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d66cc5813c92c0b1c3f6ac8a4b5c261fecb5106b190ea036e4dc24d64a4fb417"
 dependencies = [
  "heck",
- "itertools",
+ "itertools 0.13.0",
  "owo-colors",
  "proc-macro2",
  "quote",
@@ -626,6 +632,9 @@ dependencies = [
  "cw2",
  "cw20",
  "cw20-base",
+ "cw20-staking",
+ "prost",
+ "prost-types",
  "thiserror 2.0.18",
 ]
 
@@ -1026,6 +1035,15 @@ checksum = "7655c9839580ee829dfacba1d1278c2b7883e50a277ff7541299489d6bdfdc45"
 
 [[package]]
 name = "itertools"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
+dependencies = [
+ "either",
+]
+
+[[package]]
+name = "itertools"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
@@ -1176,6 +1194,38 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "prost"
+version = "0.12.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "deb1435c188b76130da55f17a466d252ff7b1418b2ad3e037d127b94e3411f29"
+dependencies = [
+ "bytes",
+ "prost-derive",
+]
+
+[[package]]
+name = "prost-derive"
+version = "0.12.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "81bddcdb20abf9501610992b6759a4c888aef7d1a7247ef75e2404275ac24af1"
+dependencies = [
+ "anyhow",
+ "itertools 0.12.1",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.118",
+]
+
+[[package]]
+name = "prost-types"
+version = "0.12.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9091c90b0a32608e984ff2fa4091273cbdd755d54935c51d520887f4a1dbd5b0"
+dependencies = [
+ "prost",
 ]
 
 [[package]]

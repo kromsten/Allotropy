@@ -19,7 +19,6 @@ import type {
 	ChainQueryClient,
 	ConfigResponse,
 	CurveInfoResponse,
-	GameInfoResponse,
 	MemberListResponse
 } from '$types';
 

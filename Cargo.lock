@@ -469,6 +469,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "cw-controllers"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b8b9a060524f8c5bff8c736e890fb52a16533e7107c6c41e1cae6077c177516"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-storage-plus",
+ "cw-utils",
+ "schemars 0.8.22",
+ "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "cw-schema"
 version = "3.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -576,6 +591,41 @@ dependencies = [
  "integer-cbrt",
  "integer-sqrt",
  "rust_decimal",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "cw20-liquid-bond"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-controllers",
+ "cw-storage-plus",
+ "cw-utils",
+ "cw2",
+ "cw20",
+ "cw20-base",
+ "cw20-bonding",
+ "integer-cbrt",
+ "integer-sqrt",
+ "num-integer",
+ "rust_decimal",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "cw20-staking"
+version = "0.14.2"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-controllers",
+ "cw-storage-plus",
+ "cw-utils",
+ "cw2",
+ "cw20",
+ "cw20-base",
  "thiserror 2.0.18",
 ]
 

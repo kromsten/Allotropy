@@ -1,24 +1,24 @@
 {
-  "type": "v1",
-  "root": 0,
-  "definitions": [
-    {
-      "name": "cw20_query_AllAccountsResponse",
-      "type": "struct",
-      "properties": {
-        "accounts": {
-          "value": 2
-        }
-      }
-    },
-    {
-      "name": "String",
-      "type": "string"
-    },
-    {
-      "name": "alloc::vec::Vec<alloc::string::String>",
-      "type": "array",
-      "items": 1
-    }
-  ]
+	"type": "v1",
+	"root": 0,
+	"definitions": [
+		{
+			"name": "cw20_query_AllAccountsResponse",
+			"type": "struct",
+			"properties": {
+				"accounts": {
+					"value": 2
+				}
+			}
+		},
+		{
+			"name": "String",
+			"type": "string"
+		},
+		{
+			"name": "alloc::vec::Vec<alloc::string::String>",
+			"type": "array",
+			"items": 1
+		}
+	]
 }

@@ -1,0 +1,39 @@
+[package]
+name = "cw20-liquid-bond"
+description = "New curve and cap minting mechanism for cw20-liquid-bond tokens"
+version = { workspace = true }
+authors = { workspace = true }
+edition = { workspace =  true }
+license = { workspace = true }
+repository = { workspace = true }
+
+exclude = [
+  "artifacts/*",
+  "typescript/*"
+]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+library = []
+
+[dependencies]
+cosmwasm-std = { workspace = true }
+cosmwasm-schema = { workspace = true }
+cw-storage-plus = { workspace = true }
+cw-controllers = { workspace = true }
+cw-utils = { workspace = true }
+cw20 = { workspace = true }
+cw2 = { workspace = true }
+
+thiserror = { workspace = true }
+num-integer = { workspace = true }
+cw20-base = { workspace = true }
+cw20-bonding = { workspace = true }
+
+rust_decimal = "1.14.3"
+integer-sqrt = "0.1.5"
+integer-cbrt = "0.1.2"
+

@@ -1,10 +1,10 @@
 {
-  "denom": "uatom",
-  "prefix": "cosmos",
-  "chain_id": "test-1",
-  "rpc_endpoint": "http://localhost:26657",
-  "grpc_endpoint": "http://localhost:9090",
-  "derivation_path": "m/44'/118'/0'/0/0",
-  "gas_adjustment": 1.5,
-  "gas_price": 0.1
+	"denom": "uatom",
+	"prefix": "cosmos",
+	"chain_id": "test-1",
+	"rpc_endpoint": "http://localhost:26657",
+	"grpc_endpoint": "http://localhost:9090",
+	"derivation_path": "m/44'/118'/0'/0/0",
+	"gas_adjustment": 1.5,
+	"gas_price": 0.1
 }

@@ -15,8 +15,8 @@ license = ""
 
 
 [workspace.dependencies]
-cosmwasm-schema = { version = "^3.0.0", default-features = false}
-cw-schema = { version = "^3.0.0" }
+cosmwasm-schema = { version = "3.0.7", default-features = false}
+cw-schema = { version = "3.0.7" }
 cw-storage-plus = { version = "3.0.1" }
 cw-controllers = { version = "3.0.0" }
 cw-utils = { version = "3.0.0" }
@@ -32,7 +32,7 @@ semver = { version = "1.0.28" }
 
 cw20-base = { path = "contracts/cw20-base", features = ["library"] }
 cw20-bonding = { path = "contracts/cw20-bonding", features = ["library"] }
-
+cw20-liquid-bond = { path = "contracts/cw20-liquid-bond", features = ["library"] }
 cw20 = { path = "packages/cw20" }
 
 

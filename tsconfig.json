@@ -14,8 +14,7 @@
 		"paths": {
 			"$config": ["./config"],
 			"$config/*": ["./config/*"],
-			"$types": [ "./src/lib/types.ts" ]
+			"$types": ["./src/lib/types.ts"]
 		}
 	}
-
 }

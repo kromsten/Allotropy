@@ -1,7 +1,20 @@
-import { createWasmAminoConverters, setupWasmExtension, SigningCosmWasmClient, wasmTypes } from '@cosmjs/cosmwasm-stargate';
+import {
+	createWasmAminoConverters,
+	setupWasmExtension,
+	SigningCosmWasmClient,
+	wasmTypes
+} from '@cosmjs/cosmwasm-stargate';
 import { Decimal } from '@cosmjs/math';
 import { DirectSecp256k1HdWallet, type GeneratedType, Registry } from '@cosmjs/proto-signing';
-import { AminoTypes, createDefaultAminoConverters, defaultRegistryTypes, GasPrice, QueryClient, setupAuthzExtension, setupBankExtension } from '@cosmjs/stargate';
+import {
+	AminoTypes,
+	createDefaultAminoConverters,
+	defaultRegistryTypes,
+	GasPrice,
+	QueryClient,
+	setupAuthzExtension,
+	setupBankExtension
+} from '@cosmjs/stargate';
 import { Comet38Client } from '@cosmjs/tendermint-rpc';
 import { getChainConfig, getContractConfig, loadTestAccounts } from './config';
 import type { ChainConfig, ChainQueryClient, Account, ChainData } from './types';
@@ -15,15 +28,15 @@ const registryTypes: [string, GeneratedType][] = [
 	...defaultRegistryTypes,
 	...wasmTypes,
 	[MsgGrant.typeUrl, MsgGrant],
-	[ExecAuthz.typeUrl, ExecAuthz],
+	[ExecAuthz.typeUrl, ExecAuthz]
 ];
 
 const aminoTypes = new AminoTypes({
 	...createDefaultAminoConverters(),
-	...createWasmAminoConverters(),
+	...createWasmAminoConverters()
 });
 
-const registry : Registry = new Registry(registryTypes)
+const registry: Registry = new Registry(registryTypes);
 
 // Cache for multiple wallets, clients, and chain data
 const walletCache: Record<string, DirectSecp256k1HdWallet> = {};
@@ -44,7 +57,7 @@ export const getCometClient = async (
 			if (attempt >= CONNECT_MAX_ATTEMPTS) {
 				throw new Error('Max connection attempts reached. Could not connect to the chain');
 			}
-			await new Promise(resolve => setTimeout(resolve, CONNECT_INTERVAL));
+			await new Promise((resolve) => setTimeout(resolve, CONNECT_INTERVAL));
 			return await getCometClient(config, attempt + 1);
 		}
 	}
@@ -58,7 +71,10 @@ export const getQueryClient = async (
 	if (!queryClient) {
 		const cometClient = await getCometClient(config, attempt);
 		queryClient = QueryClient.withExtensions(
-			cometClient, setupWasmExtension, setupBankExtension, setupAuthzExtension
+			cometClient,
+			setupWasmExtension,
+			setupBankExtension,
+			setupAuthzExtension
 		);
 	}
 	return queryClient;
@@ -67,7 +83,7 @@ export const getQueryClient = async (
 export const getWallet = async (
 	config: ChainConfig,
 	accounts: Account[],
-	accountIndex: number = 0,
+	accountIndex: number = 0
 ): Promise<DirectSecp256k1HdWallet> => {
 	const account = accounts[accountIndex];
 	if (!account) {
@@ -77,7 +93,7 @@ export const getWallet = async (
 	let wallet = walletCache[account.address];
 	if (!wallet) {
 		wallet = await DirectSecp256k1HdWallet.fromMnemonic(account.mnemonic, {
-			prefix: config.prefix,
+			prefix: config.prefix
 		});
 		walletCache[account.address] = wallet;
 	}
@@ -92,15 +108,17 @@ export const getWallet = async (
 export const getClients = async (
 	config: ChainConfig,
 	wallet: DirectSecp256k1HdWallet,
-	address: string,
+	address: string
 ): Promise<{ client: SigningCosmWasmClient; queryClient: ChainQueryClient }> => {
-
 	let client = signingClientCache[address];
 
 	if (!client || !queryClient) {
 		cometClient = await getCometClient(config);
 		queryClient = QueryClient.withExtensions(
-			cometClient, setupWasmExtension, setupBankExtension, setupAuthzExtension
+			cometClient,
+			setupWasmExtension,
+			setupBankExtension,
+			setupAuthzExtension
 		);
 
 		client = await SigningCosmWasmClient.createWithSigner(cometClient, wallet, {
@@ -134,7 +152,6 @@ export const getChainData = async (accountIndex: number = 0): Promise<ChainData>
 			config,
 			accounts
 		};
-
 	}
 	return chainData;
 };
@@ -149,7 +166,7 @@ export const getAddressClient = async (
 		let wallet = walletCache[address];
 		if (!wallet) {
 			accounts ??= loadTestAccounts();
-			const index = accounts.findIndex(acc => acc.address === address);
+			const index = accounts.findIndex((acc) => acc.address === address);
 			if (index == -1) {
 				throw new Error(`Account with address ${address} not found in loaded accounts`);
 			}
@@ -167,4 +184,5 @@ export const getAddressClient = async (
 	return client;
 };
 
-const createGasPrice = (denom: string, amount?: string)   => GasPrice.fromString(`${amount ?? '0.025'}${denom}`);	
+const createGasPrice = (denom: string, amount?: string) =>
+	GasPrice.fromString(`${amount ?? '0.025'}${denom}`);

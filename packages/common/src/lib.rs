@@ -1,6 +1,7 @@
 use prost::Message;
 use cosmwasm_std::{AnyMsg, Binary, CosmosMsg};
 
+
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Coin {
@@ -35,25 +36,3 @@ impl MsgTokenizeShares {
     }
 }
 
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct MsgTransferTokenizeShareRecord {
-    #[prost(uint64, tag = "1")]
-    pub tokenize_share_record_id: u64,
-    #[prost(string, tag = "2")]
-    pub sender: String,
-    #[prost(string, tag = "3")]
-    pub new_owner: String,
-}
-
-impl MsgTransferTokenizeShareRecord {
-    pub fn to_cosmos_msg(&self) -> CosmosMsg {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf).unwrap();
-        CosmosMsg::Any(AnyMsg {
-            type_url: "/cosmos.staking.v1beta1.MsgTransferTokenizeShareRecord".to_string(),
-            value: Binary::from(buf),
-        })
-    }
-}

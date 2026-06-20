@@ -8,7 +8,6 @@ use cw2::set_contract_version;
 use cw20_staking::state::{INVESTMENT, TOTAL_SUPPLY, Supply};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, ContractError};
-use crate::proto::{MsgTokenizeShares, Coin};
 
 const CONTRACT_NAME: &str = "crates.io:cw20-liquid-staking";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -97,20 +96,8 @@ pub fn execute_unbond(
     supply.issued = supply.issued.checked_sub(remainder)?;
     TOTAL_SUPPLY.save(deps.storage, &supply)?;
 
-    let tokenize_msg = MsgTokenizeShares {
-        delegator_address: env.contract.address.to_string(),
-        validator_address: invest.validator.clone(),
-        amount: Some(Coin {
-            denom: invest.bond_denom.clone(),
-            amount: unbond.to_string(),
-        }),
-        tokenized_share_owner: info.sender.to_string(),
-    };
-
-    let cosmos_msg = tokenize_msg.to_cosmos_msg();
 
     let res = Response::new()
-        .add_message(cosmos_msg)
         .add_attribute("action", "unbond")
         .add_attribute("to", info.sender.to_string())
         .add_attribute("unbonded", unbond)

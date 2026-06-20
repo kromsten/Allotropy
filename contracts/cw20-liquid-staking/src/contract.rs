@@ -14,46 +14,36 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
-    mut deps: DepsMut,
+    deps: DepsMut,
     env: Env,
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let res = cw20_staking::contract::instantiate(deps.branch(), env, info, msg);
+    #[cfg(not(feature = "library"))]
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-    res
+    cw20_staking::contract::instantiate(deps, env, info, msg)
 }
 
-fn get_bonded(querier: &QuerierWrapper, contract: &Addr) -> Result<Uint128, ContractError> {
-    let bonds = querier.query_all_delegations(contract)?;
-    if bonds.is_empty() {
-        return Ok(Uint128::zero());
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn execute(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    msg: ExecuteMsg,
+) -> Result<Response, ContractError> {
+    match msg {
+        ExecuteMsg::Unbond { amount } => execute_unbond(deps, env, info, amount),
+        _ => cw20_staking::contract::execute(deps, env, info, msg),
     }
-    let denom = bonds[0].amount.denom.as_str();
-    bonds.iter().fold(Ok(Uint128::zero()), |racc, d| {
-        let acc = racc?;
-        if d.amount.denom.as_str() != denom {
-            Err(ContractError::DifferentBondDenom {
-                denom1: denom.into(),
-                denom2: d.amount.denom.to_string(),
-            })
-        } else {
-            let amount: Uint128 = d.amount.amount.try_into()?;
-            Ok(acc + amount)
-        }
-    })
 }
 
-fn assert_bonds(supply: &Supply, bonded: Uint128) -> Result<(), ContractError> {
-    if supply.bonded != bonded {
-        Err(ContractError::BondedMismatch {
-            stored: supply.bonded,
-            queried: bonded,
-        })
-    } else {
-        Ok(())
-    }
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
+    cw20_staking::contract::query(deps, env, msg)
 }
+
+
+
 
 pub fn execute_unbond(
     mut deps: DepsMut,
@@ -62,6 +52,9 @@ pub fn execute_unbond(
     amount: Uint128,
 ) -> Result<Response, ContractError> {
     let invest = INVESTMENT.load(deps.storage)?;
+    let supply = TOTAL_SUPPLY.load(deps.storage)?;
+
+
     if amount < invest.min_withdrawal {
         return Err(ContractError::UnbondTooSmall {
             min_bonded: invest.min_withdrawal,
@@ -105,21 +98,36 @@ pub fn execute_unbond(
     Ok(res)
 }
 
-#[cfg_attr(not(feature = "library"), entry_point)]
-pub fn execute(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-    msg: ExecuteMsg,
-) -> Result<Response, ContractError> {
-    match msg {
-        ExecuteMsg::Unbond { amount } => execute_unbond(deps, env, info, amount),
-        _ => cw20_staking::contract::execute(deps, env, info, msg),
+
+
+
+pub fn get_bonded(querier: &QuerierWrapper, contract: &Addr) -> Result<Uint128, ContractError> {
+    let bonds = querier.query_all_delegations(contract)?;
+    if bonds.is_empty() {
+        return Ok(Uint128::zero());
+    }
+    let denom = bonds[0].amount.denom.as_str();
+    bonds.iter().fold(Ok(Uint128::zero()), |racc, d| {
+        let acc = racc?;
+        if d.amount.denom.as_str() != denom {
+            Err(ContractError::DifferentBondDenom {
+                denom1: denom.into(),
+                denom2: d.amount.denom.to_string(),
+            })
+        } else {
+            let amount: Uint128 = d.amount.amount.try_into()?;
+            Ok(acc + amount)
+        }
+    })
+}
+
+pub fn assert_bonds(supply: &Supply, bonded: Uint128) -> Result<(), ContractError> {
+    if supply.bonded != bonded {
+        Err(ContractError::BondedMismatch {
+            stored: supply.bonded,
+            queried: bonded,
+        })
+    } else {
+        Ok(())
     }
 }
-
-#[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
-    cw20_staking::contract::query(deps, env, msg)
-}
-

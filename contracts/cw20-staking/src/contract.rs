@@ -23,8 +23,9 @@ use crate::state::{InvestmentInfo, Supply, CLAIMS, INVESTMENT, TOTAL_SUPPLY};
 const FALLBACK_RATIO: Decimal = Decimal::one();
 
 // version info for migration info
-const CONTRACT_NAME: &str = "crates.io:cw20-staking";
-const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const CONTRACT_NAME: &str = "crates.io:cw20-staking";
+pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -33,6 +34,7 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
+    #[cfg(not(feature = "library"))]
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     // ensure the validator is registered
@@ -217,6 +219,8 @@ pub fn bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Cont
         .add_attribute("minted", to_mint);
     Ok(res)
 }
+
+
 
 pub fn unbond(
     mut deps: DepsMut,

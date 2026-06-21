@@ -619,6 +619,7 @@ dependencies = [
 name = "cw20-liquid-bond"
 version = "0.1.0"
 dependencies = [
+ "common",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-controllers",

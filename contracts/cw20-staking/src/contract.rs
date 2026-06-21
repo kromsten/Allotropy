@@ -6,7 +6,6 @@ use cosmwasm_std::{
     MessageInfo, QuerierWrapper, Response, StakingMsg, StdResult, Uint128, WasmMsg,
 };
 
-use cw2::set_contract_version;
 use cw20_base::allowances::{
     execute_burn_from, execute_decrease_allowance, execute_increase_allowance, execute_send_from,
     execute_transfer_from, query_allowance,
@@ -35,7 +34,7 @@ pub fn instantiate(
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     #[cfg(not(feature = "library"))]
-    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+    cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     // ensure the validator is registered
     let vals = deps.querier.query_all_validators()?;

@@ -7,8 +7,8 @@ use cw20_bonding::msg::CurveType;
 
 #[cw_serde]
 pub struct Config {
-    pub commission_rate: Decimal,
-    pub commission_recipient: Addr,
+    pub com_rate: Decimal,
+    pub com_recipient: Addr,
 }
 
 pub const CONFIG: Item<Config> = Item::new("config");
@@ -19,3 +19,9 @@ pub const CURVE_TYPE: Item<CurveType> = Item::new("curve_type");
 
 /// Contract admin controller
 pub const ADMIN: Admin = Admin::new("admin");
+
+
+pub const VALIDATORS: Item<Vec<String>> = Item::new("vs");
+
+
+pub const BURNED_TOTAL: Item<u128> = Item::new("burned_total");

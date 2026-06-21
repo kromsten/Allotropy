@@ -46,3 +46,7 @@ e2e
 node_modules
 /.svelte-kit
 /build
+
+contracts/**
+!contracts/*bond*/
+!contracts/*bond*/**

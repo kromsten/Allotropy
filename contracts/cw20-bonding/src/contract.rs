@@ -264,7 +264,8 @@ fn do_sell(
         .add_message(msg)
         .add_attribute("from", info.sender)
         .add_attribute("supply", amount)
-        .add_attribute("reserve", released);
+        .add_attribute("reserve", new_reserve)
+        .add_attribute("released", released);
     Ok(res)
 }
 

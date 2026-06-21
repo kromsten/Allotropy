@@ -29,6 +29,10 @@ pub struct InstantiateMsg {
     pub commission_rate: Decimal,
     /// Address to receive the commission fees
     pub commission_recipient: String,
+
+
+    /// list of validators to delegeate to
+    pub validators: Vec<String>,
 }
 
 
@@ -36,7 +40,9 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     /// Buy will attempt to purchase as many supply tokens as possible.
     /// You must send only reserve tokens in that message
-    Buy {},
+    Buy { validator: Option<String> },
+    
+    Sell { amount: Uint128, validator: Option<String> },
 
     /// Implements CW20. Transfer is a base message to move tokens to another account without triggering actions
     Transfer { recipient: String, amount: Uint128 },

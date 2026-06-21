@@ -17,9 +17,10 @@ pub fn unbond_logic(
     addr: &Addr,
     amount: Uint128,
     bonded: Uint128,
-    supply: &mut Supply,
     invest: &InvestmentInfo,
 ) -> Result<Uint256, ContractError> {
+    let supply = TOTAL_SUPPLY.load(storage)?;
+
     // Validate amount
     assert_bonds(&supply, bonded)?;
     if amount.is_zero() || amount < invest.min_withdrawal {
@@ -39,35 +40,14 @@ pub fn unbond_logic(
         Ok(info)
     })?;
 
-    let tax = amount.mul_floor(invest.exit_tax);
-    let remainder = amount.checked_sub(tax)?;
-
-    // Handle exit tax
-    if !tax.is_zero() {
-        let mut config = TOKEN_INFO.load(storage)?;
-        if config.mint.as_ref().map(|m| &m.minter) != Some(addr) {
-            return Err(ContractError::Unauthorized {});
-        }
-        
-        let new_total = config.total_supply + tax;
-        if let Some(limit) = config.get_cap() {
-            if new_total > limit {
-                return Err(ContractError::CannotExceedCap {});
-            }
-        }
-        config.total_supply = new_total;
-        TOKEN_INFO.save(storage, &config)?;
-
-        BALANCES.update(storage, &invest.owner, |balance| 
-            Ok::<_, ContractError>(balance.unwrap_or_default() + tax)
-        )?;
-    }
-
     // Calculate unbond amount and update supply
-    let unbond = remainder.multiply_ratio(bonded, supply.issued);
-    supply.bonded = bonded.checked_sub(unbond)?;
-    supply.issued = supply.issued.checked_sub(remainder)?;
-    TOTAL_SUPPLY.save(storage, &supply)?;
+    let unbond = amount.multiply_ratio(bonded, supply.issued);
+
+    TOTAL_SUPPLY.save(storage, &Supply { 
+        issued: supply.issued.checked_sub(amount)?,
+        bonded: bonded.checked_sub(unbond)?,
+        claims: supply.claims,
+    })?;
 
     Ok(unbond.into())
 }
@@ -83,51 +63,26 @@ pub fn liquid_unbond(
 ) -> Result<Response, ContractError> {
     let invest = INVESTMENT.load(deps.storage)?;
     let bonded = get_bonded(&deps.querier, &env.contract.address)?;
-    let mut supply = TOTAL_SUPPLY.load(deps.storage)?;
 
-    let amount = unbond_logic(deps.storage, &info.sender, amount.try_into()?, bonded, &mut supply, &invest)?;
-
-    let mut messages: Vec<CosmosMsg> = vec![];
-
-    let to_address = info.sender.to_string();
+    let amount = unbond_logic(deps.storage, &info.sender, amount.try_into()?, bonded, &invest)?;
     let denom = invest.bond_denom.clone();
-    let balance = deps.querier.query_balance(&env.contract.address, &denom)?.amount;
-    let remainder = amount.checked_sub(balance).unwrap_or_else(|_| Uint256::zero());
 
-    let normal = if remainder.is_zero() {
-        messages.push(BankMsg::Send { to_address: to_address, amount: vec![Coin { denom,amount }] }.into());
-        amount
-    } else {
-        
-        messages.push(BankMsg::Send {
-            to_address: to_address.clone(),
-            amount: vec![Coin { denom: denom.clone(), amount: balance }],
-        }.into());
+    let delegation = deps.querier.query_all_delegations(&env.contract.address)?
+        .into_iter()
+        .find(|d| d.amount.amount >= amount)
+        .ok_or(ContractError::NothingToClaim {})?;
 
-        let delegation = deps.querier.query_all_delegations(&env.contract.address)?
-            .into_iter()
-            .find(|d| d.amount.amount >= remainder)
-            .ok_or(ContractError::NothingToClaim {})?;
+    let amount = amount.to_string();
+    let res = Response::new()
+        .add_attributes([("action", "liquid_unbond"), ("amount", &amount)]);
 
-        messages.push(common::MsgTokenizeShares {
+    Ok(res
+        .add_message(common::MsgTokenizeShares {
             delegator_address: env.contract.address.to_string(),
             validator_address: delegation.validator.to_string(),
-            amount: Some(common::Coin {
-                denom: delegation.amount.denom,
-                amount: remainder.to_string(),
-            }),
+            amount: Some(common::Coin { denom, amount: amount }),
             tokenized_share_owner: info.sender.to_string(),
-        }.to_cosmos_msg());
-
-        balance
-    };
-
-    Ok(Response::new()
-        .add_messages(messages)
-        .add_attributes([
-            ("action", "liquid_unbond"),
-            ("normal_unbond", &normal.to_string()),
-            ("liquid_unbond", &remainder.to_string()),
-        ]))
+        }.to_cosmos_msg()
+    ))
 }
 

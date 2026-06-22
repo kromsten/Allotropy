@@ -7,4 +7,4 @@ edition = "2021"
 prost = { version = "0.14.4", default-features = false, features = ["derive"] }
 
 anybuf = "1.0.0"
-cosmwasm-std = { workspace = true }
+cosmwasm-std = { workspace = true, features = ["cosmwasm_2_0", "staking"] }

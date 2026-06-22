@@ -48,7 +48,7 @@
 
   let canvas: HTMLCanvasElement;
   let chart: Chart | null = null;
-  const hoverCrosshairPlugin = createHoverCrosshairPlugin(a, b);
+  const hoverCrosshairPlugin = $derived(createHoverCrosshairPlugin(a, b));
   
 
   async function createChart() {
@@ -200,7 +200,10 @@
   });
 
   $effect(() => {
-    if (isZoomed) applyZoomState();
+    if (isZoomed) {
+      updateChart();
+      applyZoomState();
+    } 
   });
 
   onMount(() => createChart());

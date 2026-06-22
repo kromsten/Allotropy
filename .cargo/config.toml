@@ -3,5 +3,10 @@ unit-test = "test --lib"
 wasm-debug = "build --target wasm32-unknown-unknown"
 wasm = "build --release --target wasm32-unknown-unknown --lib"
 
+
 [target.wasm32-unknown-unknown]
-rustflags = ["-C", "link-arg=--allow-undefined"]
+rustflags = [
+    "-C", "link-arg=-s",
+    "-C", "link-arg=--allow-undefined",
+    "-C", "target-feature=-bulk-memory",
+]

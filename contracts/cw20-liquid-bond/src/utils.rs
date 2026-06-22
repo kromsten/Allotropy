@@ -1,5 +1,7 @@
-use cw20_bonding::msg::ExecuteMsg as BondingExecuteMsg;
-use crate::msg::ExecuteMsg;
+use cosmwasm_std::{StdResult, Uint128};
+use cw20_bonding::{curves::{DecimalPlaces, square_root}, msg::{CurveType, ExecuteMsg as BondingExecuteMsg}};
+use rust_decimal::Decimal;
+use crate::{msg::ExecuteMsg, state::CURVE_TYPE};
 
 
 /// Convert our local ExecuteMsg to the bonding contract's ExecuteMsg
@@ -54,4 +56,43 @@ pub fn to_bonding_msg(msg: &ExecuteMsg) -> Option<BondingExecuteMsg> {
         },
         ExecuteMsg::CallFor { .. } => None,
     }
+}
+
+
+pub fn updated_curve_slope(
+    storage: &mut dyn cosmwasm_std::Storage,
+    curve_type: &CurveType,
+    normalize: DecimalPlaces,
+    reserve: &Uint128,
+    supply: &Uint128
+ ) -> StdResult<CurveType> {
+    if supply.is_zero() {
+        return Ok(curve_type.clone());
+    }
+
+    let supply = normalize.from_supply(*supply);
+    let reserve = normalize.from_reserve(*reserve);
+
+    Ok(match curve_type.clone() {
+        CurveType::SquareRoot { scale, ..} => {
+            let denom = supply * square_root(supply); // x^(3/2) = x * sqrt(x)
+            let slope = Decimal::new(15, 1) * reserve / denom;
+            let ctype = CurveType::SquareRoot { slope: normalize.to_reserve(slope), scale };
+            CURVE_TYPE.save(storage, &ctype)?;
+            ctype
+        },
+        CurveType::Linear { scale, .. } => {
+            let nom = Decimal::new(2, 0) * reserve;
+            let slope = nom / (supply * supply);
+            let ctype = CurveType::Linear { slope: normalize.to_reserve(slope), scale };
+            CURVE_TYPE.save(storage, &ctype)?;
+            ctype
+        },
+        CurveType::Constant { scale, .. } => {
+            let slope = reserve / supply;
+            let ctype = CurveType::Constant { value: normalize.to_reserve(slope), scale };
+            CURVE_TYPE.save(storage, &ctype )?;
+            ctype
+        }
+    })
 }

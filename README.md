@@ -1,4 +1,4 @@
-# CosmWasm & SvelteKit Token App
+# Allotropy Finance
 
 A full-stack CosmWasm token launch and curve-bonding application. It combines Rust-based CosmWasm smart contracts for token management and bonding curve logic with a SvelteKit frontend for interactive user interfaces.
 
@@ -6,10 +6,12 @@ A full-stack CosmWasm token launch and curve-bonding application. It combines Ru
 
 - **Frontend**: Svelte 5, SvelteKit, Tailwind CSS v4, Skeleton, Bun (package manager), Vitest (testing)
 - **Smart Contracts (CosmWasm / Rust)**:
+  - `contracts/cw20-liquid-bond`: Main liquid bonding curve contract.
+
+
+  Confio contracts that were ported to latest version, slightly modified and partially re-used
+  - `contracts/cw20-bonding`: Standard CW20 token contract.
   - `contracts/cw20-base`: Standard CW20 token contract.
-  - `contracts/cw20-bonding`: Automated pricing token bonding curve contract.
-  - `packages/cw20`: Shared token structures and helpers.
-  - Built with edition `2024` and Cosmos SDK v3 compatibilities.
 
 ## Developer Workflows
 

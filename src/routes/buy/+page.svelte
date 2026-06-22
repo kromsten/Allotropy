@@ -213,6 +213,7 @@
                 id="spend"
                 type="number" 
                 min="1"
+                max={maxBalance}
                 class="input text-3xl font-mono flex-1 bg-transparent border border-white/20 focus:border-primary-500 rounded-2xl px-6 py-4 outline-none"
                 onfocus={() => isSpendInputFocused = true}
                 onblur={() => isSpendInputFocused = false}

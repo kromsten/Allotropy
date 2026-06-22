@@ -24,4 +24,7 @@ pub const ADMIN: Admin = Admin::new("admin");
 pub const VALIDATORS: Item<Vec<String>> = Item::new("vs");
 
 
+pub const STAKE_TOTAL: Item<u128> = Item::new("stake_total");
+
+pub const LAST_BALANCE: Item<u128> = Item::new("last_balance");
 pub const BURNED_TOTAL: Item<u128> = Item::new("burned_total");

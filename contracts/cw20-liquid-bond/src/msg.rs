@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Binary, Decimal, Uint128};
+use cosmwasm_std::{Binary, Decimal, Uint128, Uint256};
 use cw20::Expiration;
 
 
@@ -42,7 +42,7 @@ pub enum ExecuteMsg {
     /// You must send only reserve tokens in that message
     Buy { validator: Option<String> },
     
-    Sell { amount: Uint128, validator: Option<String> },
+    Sell { amount: Uint256, validator: Option<String> },
 
     /// Implements CW20. Transfer is a base message to move tokens to another account without triggering actions
     Transfer { recipient: String, amount: Uint128 },

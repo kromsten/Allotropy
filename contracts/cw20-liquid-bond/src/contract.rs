@@ -4,7 +4,7 @@ use std::str::FromStr;
 use cosmwasm_std::entry_point;
 
 use cosmwasm_std::{
-    BankMsg, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response, StakingMsg, StdError, StdResult, Uint128, Uint256, ensure
+    BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Env, MessageInfo, Response, StakingMsg, StdError, StdResult, Uint128, Uint256, ensure
 };
 use cw2::set_contract_version;
 use cw20_base::allowances::execute_burn_from;
@@ -136,38 +136,62 @@ pub fn execute(
         },
         ExecuteMsg::Sell { amount, validator } => {
 
+            let state = CURVE_STATE.load(deps.storage)?;
             let querier = deps.querier.clone();
             let contract_addr = env.contract.address.to_string();
             let sender = info.sender.to_string();
 
+            let to_address = info.sender.to_string();
+            let denom = state.reserve_denom.clone();
+            let balance = deps.querier.query_balance(&env.contract.address, &denom)?.amount;
+            let rem = amount.checked_sub(balance).unwrap_or_else(|_| Uint256::zero());
+
+            let mut messages: Vec<CosmosMsg> = Vec::with_capacity(2);
+
             let res =  do_execute(deps, env, info, bonding_msg, curve_fn)?;
-            let released : Uint256 = res.attributes.iter().
+            let amount : Uint256 = res.attributes.iter().
                 find(|a| a.key == "released")
                 .map(|a| Uint128::from_str(&a.value).unwrap())
                 .ok_or(ContractError::Unauthorized {})?
                 .into();
 
-             let delegation = querier.query_all_delegations(&contract_addr)?
-                .into_iter()
-                .find(|d| d.amount.amount >= released && 
-                    validator.as_ref().map_or(true, |v| v == &d.validator)
-                )
-                .ok_or(ContractError::Unauthorized {})?;
+            let normal = if rem.is_zero() {
+                messages.push(BankMsg::Send { to_address: to_address, amount: vec![Coin { denom, amount }] }.into());
+                amount
+            } else {
+                
+                messages.push(BankMsg::Send {
+                    to_address: to_address.clone(),
+                    amount: vec![Coin { denom: denom.clone(), amount: balance }],
+                }.into());
 
-            let amount = amount.to_string();
+                let delegation = querier.query_all_delegations(&contract_addr)?
+                    .into_iter()
+                    .find(|d| d.amount.amount >= rem && validator.as_ref().map_or(true, |v| d.validator == *v))
+                    .ok_or(ContractError::Unauthorized  {})?;
 
-            Response::new()
-                .add_attributes(res.attributes)
-                .add_message(common::MsgTokenizeShares {
+                messages.push(common::MsgTokenizeShares {
                     delegator_address: contract_addr,
                     validator_address: delegation.validator.to_string(),
-                    amount: Some(common::Coin { denom: delegation.amount.denom, amount: amount }),
+                    amount: Some(common::Coin { denom, amount: rem.to_string() }),
                     tokenized_share_owner: sender,
-                }.to_cosmos_msg()
-            )
+                }.to_cosmos_msg());
 
+                balance
+            };
+            
+
+            Response::new()
+                .add_messages(messages)
+                .add_attributes(res.attributes)
+                .add_attributes([
+                    ("action", "liquid_unbond"),
+                    ("normal_unbond", &normal.to_string()),
+                    ("liquid_unbond", &rem.to_string()),
+                ])
         },
 
+        // "sponsored burn"
         ExecuteMsg::Burn { amount } => {
             BURNED_TOTAL.update(deps.storage, |total| -> StdResult<_> {
                 Ok::<_, StdError>(Uint128::new(total).checked_add(amount)?.u128())

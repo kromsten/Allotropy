@@ -43,6 +43,11 @@
 		"vitest-browser-svelte": "^2.1.1"
 	},
 	"dependencies": {
-		"@cosmjs/proto-signing": "^0.39.0"
+		"@cosmjs/proto-signing": "^0.39.0",
+		"chartjs-plugin-annotation": "^3.1.0",
+		"chartjs-plugin-zoom": "^2.2.0",
+		"decimal.js": "^10.6.0",
+		"gsap": "^3.15.0",
+		"svelte-chartjs": "^4.0.1"
 	}
 }

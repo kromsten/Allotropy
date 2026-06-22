@@ -49,3 +49,14 @@ export interface MemberListResponse {
 export interface CurveInfoResponse {
 	reserve_denom: string;
 }
+
+
+export interface ChartComponentProps {
+    currentSupply?: number;
+    previewSupply?: number;
+    isZoomed?: boolean;
+    a?: number;
+    b?: number;
+    maxSupply?: number;
+    height?: number;
+}

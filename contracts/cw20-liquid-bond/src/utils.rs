@@ -6,7 +6,7 @@ use crate::msg::ExecuteMsg;
 pub fn to_bonding_msg(msg: &ExecuteMsg) -> Option<BondingExecuteMsg> {
     match msg {
         ExecuteMsg::Buy { .. } => Some(BondingExecuteMsg::Buy {}),
-        ExecuteMsg::Sell { amount, .. } => Some(BondingExecuteMsg::Burn { amount: *amount }),
+        ExecuteMsg::Sell { amount, .. } => Some(BondingExecuteMsg::Burn { amount: amount.clone().try_into().ok()? }),
         ExecuteMsg::Transfer { recipient, amount } => Some(BondingExecuteMsg::Transfer { 
             recipient: recipient.clone(), 
             amount: *amount 

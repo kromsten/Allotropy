@@ -8,7 +8,7 @@
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
-<div class="min-h-screen bg-surface-950 text-white">
+<div class="min-h-screen bg-surface-950-50 text-white">
 	{@render children()}
 
 </div>

@@ -1,6 +1,4 @@
-<!-- src/lib/components/CurveChart.svelte -->
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
   import {
     Chart,
     LineController,
@@ -9,14 +7,27 @@
     LinearScale,
     Filler,
     Tooltip,
-    type ChartConfiguration
+    type ChartConfiguration,
+
+	type UpdateMode,
+
+
   } from 'chart.js';
 
-  import { resetZoom, zoomRect, zoomScale  } from 'chartjs-plugin-zoom';
-
   import type { ChartComponentProps } from '$types';
+  import { onMount, onDestroy } from 'svelte';
+
+  type Point = { x: number, y: number };
+  type ScaleRange = { min: number; max: number };
+
+  let 
+    resetZoom : (chart: Chart, mode?: UpdateMode) => void | undefined,
+    zoomRect : (chart: Chart, p0: Point, p1: Point, mode?: UpdateMode) => void | undefined,
+    zoomScale : (chart: Chart, scaleId: string, range: ScaleRange, mode?: UpdateMode) => void | undefined;
+
 
   import {
+	createHoverCrosshairPlugin,
     generateCurveData,
     generatePurchaseArea,
     getChartPluginOptions,
@@ -37,34 +48,17 @@
 
   let canvas: HTMLCanvasElement;
   let chart: Chart | null = null;
-
-  function applyZoomState() {
-    if (!chart) return;
-
-    const diff = (previewSupply ?? 0) - currentSupply;
-
-    if (isZoomed && previewSupply && diff > 0) {
-
-      zoomRect(chart, 
-      { x: currentSupply - diff * 0.1, y: a * Math.sqrt(currentSupply) + b },
-      { x: previewSupply + diff * 0.1, y: a * Math.sqrt(previewSupply) + b
-      });
-
-
-      const { min, max } = getFocusedRange(previewSupply, currentSupply, maxSupply);
-
-      zoomScale(chart, 'x', { min, max });
-      
-    } else {
-      resetZoom(chart);
-    }
-  }
+  const hoverCrosshairPlugin = createHoverCrosshairPlugin(a, b);
+  
 
   async function createChart() {
     if (!canvas || chart) return;
 
     try {
       const zoomModule = await import('chartjs-plugin-zoom');
+      resetZoom = zoomModule.resetZoom;
+      zoomRect = zoomModule.zoomRect;
+      zoomScale = zoomModule.zoomScale;
       
       Chart.register(zoomModule.default);
     } catch (err) {
@@ -140,8 +134,17 @@
             ticks: { color: '#ffffff50', font: { size: 10 } }
           },
         },
-        plugins: getChartPluginOptions(a, b, maxSupply)
-      }
+        plugins: getChartPluginOptions(a, b, maxSupply),
+        interaction: {
+          mode: 'nearest',
+          intersect: false,
+          axis: 'x'
+        },
+        onHover: (_event, _elements, chart) => {
+          chart.canvas.style.cursor = 'crosshair';
+        },
+      },
+      plugins: [hoverCrosshairPlugin]
     };
 
     chart = new Chart(canvas, config);
@@ -169,6 +172,27 @@
     chart.update('none');
   }
 
+  function applyZoomState() {
+    if (!chart) return;
+
+    const diff = (previewSupply ?? 0) - currentSupply;
+
+    if (isZoomed && previewSupply && diff > 0) {
+
+     /*  zoomRect(chart, 
+        { x: currentSupply - diff * 0.1, y: a * Math.sqrt(currentSupply) + b },
+        { x: previewSupply + diff * 0.1, y: a * Math.sqrt(previewSupply) + b
+      }); */
+
+
+      const { min, max } = getFocusedRange(previewSupply, currentSupply, maxSupply);
+      zoomScale(chart, 'x', { min, max });
+      
+    } else {
+      resetZoom(chart);
+    }
+  }
+
   $effect(() => {
     if (!chart) return;
     updateChart();
@@ -176,7 +200,7 @@
   });
 
   $effect(() => {
-    if (isZoomed || !isZoomed) applyZoomState();
+    if (isZoomed) applyZoomState();
   });
 
   onMount(() => createChart());
@@ -188,5 +212,5 @@
 </script>
 
 <div class="relative w-full rounded-3xl overflow-hidden bg-[#0a0a0f]" style="height: {height}px">
-  <canvas bind:this={canvas} class="w-full h-full"></canvas>
+  <canvas bind:this={canvas} class="w-full h-full cursor-crosshair"></canvas>
 </div>

@@ -1,4 +1,4 @@
-import type { PluginOptionsByType } from 'chart.js';
+import type { Chart, Plugin, PluginOptionsByType } from 'chart.js';
 
 export function generateCurveData(a: number, b: number, maxSupply: number) {
     const points: { x: number; y: number }[] = [];
@@ -81,3 +81,102 @@ export function getFocusedRange(
     max: Math.min(maxSupply, previewSupply + padding * 1.4)
   };
 }
+
+
+
+
+
+export function generateAreaUnderCurve(
+  a: number,
+  b: number,
+  toSupply: number,
+  steps = 60
+) {
+  if (toSupply <= 0) return [];
+ 
+  const points: { x: number; y: number }[] = [{ x: 0, y: b }];
+  for (let i = 1; i <= steps; i++) {
+    const s = (toSupply / steps) * i;
+    points.push({ x: s, y: a * Math.sqrt(Math.max(0, s)) + b });
+  }
+  return points;
+}
+ 
+export function createHoverCrosshairPlugin(a: number, b: number): Plugin<'line'> {
+  let hoverSupply: number | null = null;
+ 
+  return {
+    id: 'hoverCrosshair',
+    afterEvent(chart, args) {
+      const { event, inChartArea } = args;
+ 
+      if (event.type === 'mousemove' && inChartArea) {
+        const supply = chart.scales.x.getValueForPixel(event.x!);
+        if (typeof supply === 'number' && Number.isFinite(supply)) {
+          const clamped = Math.max(0, Math.min(supply, chart.scales.x.max as number));
+          if (hoverSupply !== clamped) {
+            hoverSupply = clamped;
+            args.changed = true;
+          }
+        }
+      } else if (
+        event.type === 'mouseout' ||
+        (event.type === 'mousemove' && !inChartArea && hoverSupply !== null)
+      ) {
+        hoverSupply = null;
+        args.changed = true;
+      }
+    },
+    beforeDatasetsDraw(chart) {
+      if (hoverSupply === null) return;
+ 
+      const { ctx, chartArea } = chart;
+      const xScale = chart.scales.x;
+      const yScale = chart.scales.y;
+      const supply = hoverSupply;
+      const price = a * Math.sqrt(Math.max(0, supply)) + b;
+ 
+      const x = xScale.getPixelForValue(supply);
+      const y = yScale.getPixelForValue(price);
+      const yBottom = yScale.getPixelForValue(0);
+      const xLeft = xScale.getPixelForValue(0);
+ 
+      ctx.save();
+ 
+      ctx.beginPath();
+      ctx.moveTo(xLeft, yBottom);
+ 
+      const steps = 50;
+      for (let i = 0; i <= steps; i++) {
+        const s = (supply / steps) * i;
+        const p = a * Math.sqrt(Math.max(0, s)) + b;
+        ctx.lineTo(xScale.getPixelForValue(s), yScale.getPixelForValue(p));
+      }
+ 
+      ctx.lineTo(x, yBottom);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(103, 232, 249, 0.18)';
+      ctx.fill();
+ 
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, yBottom);
+      ctx.strokeStyle = 'rgba(103, 232, 249, 0.75)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+ 
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#67e8f9';
+      ctx.fill();
+      ctx.strokeStyle = '#0a0a0f';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+ 
+      ctx.restore();
+    }
+  };
+}
+ 

@@ -1,6 +1,6 @@
 # Allotropy Finance
 
-A full-stack CosmWasm token launch and curve-bonding application. It combines Rust-based CosmWasm smart contracts for token management and bonding curve logic with a SvelteKit frontend for interactive user interfaces.
+A platform for launching continuous tokens using bonding curves. Hackathon submission is for the most part smart contract for the liquid bonding `cw20-liquid-bond` that allows to use assets locked in a bonding curve to get rewards and allow instantly claiming back liquidity using LSTs.
 
 ## Tech Stack & Project Structure
 

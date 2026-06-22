@@ -1,98 +1,43 @@
-# Allotropy Finance
+# Allotropy
 
-A platform for launching continuous tokens using bonding curves. Hackathon submission is for the most part smart contract for the liquid bonding `cw20-liquid-bond` that allows to use assets locked in a bonding curve to get rewards and allow instantly claiming back liquidity using LSTs.
+> The same ATOM, in different forms.
 
-## Tech Stack & Project Structure
-
-- **Frontend**: Svelte 5, SvelteKit, Tailwind CSS v4, Skeleton, Bun (package manager), Vitest (testing)
-- **Smart Contracts (CosmWasm / Rust)**:
-  - `contracts/cw20-liquid-bond`: Main liquid bonding curve contract.
+**Allotropy** is a CosmWasm smart contract that brings **liquid bonding curves** to the Cosmos ecosystem. It combines the capital-efficient price discovery of bonding curves with Cosmos-native liquid staking, allowing users to buy and sell a liquid representation of staked ATOM without the 21-day unbonding period.
 
 
-  Confio contracts that were ported to latest version, slightly modified and partially re-used
-  - `contracts/cw20-bonding`: Standard CW20 token contract.
-  - `contracts/cw20-base`: Standard CW20 token contract.
 
-## Developer Workflows
+## Key Features
 
-### Prerequisites
+- **Dynamic Bonding Curve** — Price is determined algorithmically by supply (supports multiple curve types via `cw20-bonding`)
+- **Instant or Liquid Exit** — On sell, users receive native ATOM if available, otherwise tokenized shares via liquid staking
 
-- [Rust](https://rustup.rs/) (for contracts build & lint)
-- [Bun](https://bun.sh/) (for SvelteKit web dev)
-- [Docker](https://www.docker.com/) (to run a local chain environment)
+## How It Works
 
-### Smart Contracts
+### Buy Flow
 
-Compile the contracts:
+1. User sends `uatom` to the contract
+2. Commission is taken (if configured)
+3. Remaining ATOM is staked to a validator via `StakingMsg::Delegate`
+4. New tokens are minted according to the current bonding curve
+5. User can see his balance using cw20 interface (or as a native token in a future tokenfactory implementation) 
 
-```bash
-cargo build
-```
+### Sell Flow (Liquid Unbond)
 
-Run linter:
+1. User calls `Sell` with the amount of tokens to sell
+2. Tokens are burned from the user's balance and removed from the total supply
+3. The bonding curve calculates how much native ATOM should be released
+4. The contract attempt to find regulat free ATOM that might have got accumulated from staking rewards or other sources like deliberate deposits by governing entity
+5. If there is not enough free ATOM, the contract will ask the chain to issue tokenised shares directly to the user
+6. The user can keep the tokenized shares and claim the rewards or initiate the unbonding process releasing tokens directky to the user (after 21 days) without any intermediaries.
 
-```bash
-cargo clippy --all-targets -- -D warnings
-```
 
-Format code:
 
-```bash
-cargo fmt
-```
+## Why Bonding Curves + Liquid Staking?
 
-Build optimized CosmWasm artifacts:
+Traditional bonding curves give instant liquidity and fair price discovery but usually require the reserve to sit idle. Allotropy solves this by **staking the reserve**, while still allowing users to exit instantly through Cosmos liquid staking primitives.
 
-```bash
-make optimize
-```
+This creates a powerful new primitive: **liquid staked bonding curve tokens**.
 
-### Local Dev Chain
 
-Start the local CosmWasm Cosmos chain container:
 
-```bash
-make local-chain
-```
 
-This builds of a local-gaia image and runs it with test accounts configured in `config/accounts.json`.
-
-Port mappings:
-
-- RPC: `http://localhost:26657`
-- gRPC: `http://localhost:9090`
-- REST API: `http://localhost:1317`
-
-### SvelteKit Web App
-
-Install dependencies:
-
-```bash
-bun install
-```
-
-Start the Svelte development server:
-
-```bash
-bun dev
-```
-
-Run Unit/E2E Tests:
-
-```bash
-bun test
-```
-
-Check linting:
-
-```bash
-bun run lint
-```
-
-Format code:
-
-```bash
-bun run format
-```
-
----

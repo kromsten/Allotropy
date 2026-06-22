@@ -1,0 +1,54 @@
+# macOS
+.DS_Store
+
+# Text file backups
+**/*.rs.bk
+
+# Build results
+target/
+**/target
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+.codegraph
+.env
+
+# User-gen
+metadata.csv
+
+# ENV
+.env
+logs
+
+# Auto-gen
+.cargo-ok
+.codacy
+
+
+# Build artifacts
+*.wasm
+hash.txt
+contracts.txt
+artifacts/
+
+# code coverage
+tarpaulin-report.*
+
+# integration tests
+e2e/gas_reports/*
+
+
+temp*
+ts
+e2e
+
+node_modules
+/.svelte-kit
+/build
+
+contracts/**
+!contracts/*bond*/
+!contracts/*bond*/**
+contracts/*bond*/target

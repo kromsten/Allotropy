@@ -8,11 +8,11 @@ use cw2::set_contract_version;
 use cw20_base::allowances::execute_burn_from;
 use cw20_base::contract::{execute_burn, execute_mint};
 use cw20_bonding::curves::DecimalPlaces;
-use cw_utils::{may_pay, must_pay, nonpayable};
+use cw_utils::{must_pay, nonpayable};
 
 use crate::error::ContractError;
 use crate::msg::{InstantiateMsg, ExecuteMsg};
-use crate::state::{ADMIN, BURNED_TOTAL, CONFIG, CURVE_TYPE, Config, STAKE_TOTAL, VALIDATORS};
+use crate::state::{ADMIN, BURNED_TOTAL, CONFIG, CURVE_TYPE, Config, LAST_BALANCE, STAKE_TOTAL, VALIDATORS};
 use crate::utils::{to_bonding_msg, updated_curve_slope};
 use cw20_base::state::{TOKEN_INFO, TokenInfo, MinterData};
 use cw20_bonding::state::{CURVE_STATE, CurveState};
@@ -26,6 +26,8 @@ use cw20_bonding::msg::{CurveFn, QueryMsg};
 pub const CONTRACT_NAME: &str = "crates.io:cw20-liquid-bond";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
+pub (crate) const DENOM : &str = "uatom";
+pub (crate) const DECIMALS : u8 = 6;
 
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -38,10 +40,8 @@ pub fn instantiate(
     nonpayable(&info)?;
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    ensure!(
-        msg.commission_rate >= Decimal::zero() && msg.commission_rate <= Decimal::percent(100),
-        ContractError::InvalidCommissionRate {}
-    );
+    let com_rate = msg.commission_rate.unwrap_or_default();
+    ensure!(com_rate >= Decimal::zero() && com_rate <= Decimal::percent(100),ContractError::BadComRate {});
 
     let data = TokenInfo {
         name: msg.name,
@@ -53,22 +53,24 @@ pub fn instantiate(
             cap: None,
         }),
     };
-    
-    let places = DecimalPlaces::new(msg.decimals, msg.reserve_decimals);
-    let supply = CurveState::new(msg.reserve_denom, places);
-    
-    TOKEN_INFO.save(deps.storage, &data)?;
-    CURVE_STATE.save(deps.storage, &supply)?;
-    CURVE_TYPE.save(deps.storage, &msg.curve_type)?;
 
-    let config = Config {
-        com_rate: msg.commission_rate,
-        com_recipient: deps.api.addr_validate(&msg.commission_recipient)?,
-    };
-    CONFIG.save(deps.storage, &config)?;
+    let com_recipient = msg.commission_recipient.as_ref()
+        .map(|addr| deps.api.addr_validate(addr).ok())
+        .flatten()
+        .unwrap_or_else(|| info.sender.clone());
+
+    let places = DecimalPlaces::new(msg.decimals, DECIMALS);
+    
+    CONFIG.save(deps.storage, &Config { com_recipient, com_rate })?;
+    CURVE_STATE.save(deps.storage, &CurveState::new(DENOM.to_string(), places))?;
+    CURVE_TYPE.save(deps.storage, &msg.curve_type)?;
+    TOKEN_INFO.save(deps.storage, &data)?;
+
+  
     VALIDATORS.save(deps.storage, &msg.validators)?;
     STAKE_TOTAL.save(deps.storage, &0u128)?;
-
+    LAST_BALANCE.save(deps.storage, &0u128)?;
+    BURNED_TOTAL.save(deps.storage, &0u128)?;
     ADMIN.set(deps, Some(info.sender.clone()))?;
 
     Ok(Response::default())
@@ -87,15 +89,12 @@ pub fn execute(
     let mut curve_type = CURVE_TYPE.load(deps.storage)?;
     let token_info = TOKEN_INFO.load(deps.storage)?;
 
-
     let mut state = CURVE_STATE.load(deps.storage)?;
-    let denom = state.reserve_denom.clone();
-
 
     let staked_total = STAKE_TOTAL.load(deps.storage)?;
-    let balance_total = deps.querier.query_balance(&env.contract.address, &denom)?;
+    let balance_total = deps.querier.query_balance(&env.contract.address, DENOM)?;
 
-    let paid = cw_utils::may_pay(&info, &denom)?;
+    let paid = cw_utils::may_pay(&info, DENOM)?;
     let balance = balance_total.amount.checked_sub(paid)?;
 
     let reserve: Uint128 = balance.checked_add(staked_total.into())?.try_into()?;
@@ -179,7 +178,7 @@ fn execute_buy(
     })?;
 
 
-    let payment : Uint128 = must_pay(&info, &state.reserve_denom)?.try_into()?;
+    let payment : Uint128 = must_pay(&info, DENOM)?.try_into()?;
 
     // calculate how many tokens can be purchased with this and mint them
     let curve = curve_fn(state.clone().decimals);
@@ -239,19 +238,13 @@ fn execute_sell(
     amount: Uint256,
     validator: Option<String>,
 ) -> Result<Response, ContractError> {
-    let querier = deps.querier.clone();
     let contract_addr = env.contract.address.to_string();
     let sender = info.sender.to_string();
 
-    let to_address = info.sender.to_string();
     let denom = state.reserve_denom.clone();
-    let balance = deps.querier.query_balance(&env.contract.address, &denom)?.amount;
-    let rem = amount.checked_sub(balance).unwrap_or_else(|_| Uint256::zero());
-
-    let mut messages: Vec<CosmosMsg> = Vec::with_capacity(2);
 
     let amount128: Uint128 = amount.try_into()?;
-
+    
     let curve = curve_fn(state.clone().decimals);
     state.supply = state
         .supply
@@ -259,44 +252,57 @@ fn execute_sell(
         .map_err(|_|StdError::from(OverflowError { operation: OverflowOperation::Sub }))?;
 
     let new_reserve = curve.reserve(state.supply);
-    let released = state
+    let released : Uint256 = state
         .reserve
         .checked_sub(new_reserve)
-        .map_err(|_|StdError::from(OverflowError { operation: OverflowOperation::Sub }))?;
+        .map_err(|_|StdError::from(OverflowError { operation: OverflowOperation::Sub }))?
+        .into();
 
     state.reserve = new_reserve;
     CURVE_STATE.save(deps.storage, &state)?;
 
-    let normal = if rem.is_zero() {
-        messages.push(BankMsg::Send { to_address: to_address, amount: vec![Coin { denom, amount }] }.into());
-        amount
-    } else {
-        
-        messages.push(BankMsg::Send {
-            to_address: to_address.clone(),
-            amount: vec![Coin { denom: denom.clone(), amount: balance }],
-        }.into());
+    let balance = deps.querier.query_balance(&env.contract.address, &denom)?.amount;
+
+    let to_send_now = std::cmp::min(released, balance);
+    let to_liquid_unbond = released.checked_sub(to_send_now).unwrap_or_default();
+
+    let mut messages: Vec<CosmosMsg> = Vec::with_capacity(2);
+
+
+    if !to_send_now.is_zero() {
+        messages.push(
+            BankMsg::Send {
+                to_address: info.sender.to_string(),
+                amount: vec![Coin {
+                    denom: state.reserve_denom.clone(),
+                    amount: to_send_now.clone(),
+                }],
+            }
+            .into(),
+        );
+    }
+
+    if !to_liquid_unbond.is_zero() {
 
         STAKE_TOTAL.update(deps.storage, |total| -> StdResult<_> {
-            Ok::<_, StdError>(Uint128::new(total).checked_sub(rem.try_into().unwrap_or_default())?.u128())
+            Ok::<_, StdError>(Uint128::new(total).checked_sub(to_liquid_unbond.try_into().unwrap_or_default())?.u128())
         })?;
-
-        let delegation = querier.query_all_delegations(&contract_addr)?
+    
+        let delegation = deps.querier.query_all_delegations(&contract_addr)?
             .into_iter()
-            .find(|d| d.amount.amount >= rem && validator.as_ref().map_or(true, |v| d.validator == *v))
+            .find(|d| d.amount.amount >= to_liquid_unbond && validator.as_ref().map_or(true, |v| d.validator == *v))
             .ok_or(ContractError::Unauthorized  {})?;
-
+    
         messages.push(common::MsgTokenizeShares {
             delegator_address: contract_addr,
             validator_address: delegation.validator.to_string(),
-            amount: Some(common::Coin { denom, amount: rem.to_string() }),
+            amount: Some(common::Coin { denom, amount: to_liquid_unbond.to_string() }),
             tokenized_share_owner: sender,
         }.to_cosmos_msg());
+    }
 
-        balance
-    };
+    execute_burn(deps, env, info, amount128)?;
     
-
     Ok(Response::new()
         .add_messages(messages)
         .add_attributes([
@@ -304,7 +310,7 @@ fn execute_sell(
             ("supply", &state.supply.to_string()),
             ("reserve", &state.reserve.to_string()),
             ("released", &released.to_string()),
-            ("normal_unbond", &normal.to_string()),
-            ("liquid_unbond", &rem.to_string()),
+            ("normal_unbond", &to_send_now.to_string()),
+            ("liquid_unbond", &to_liquid_unbond.to_string()),
         ]))
 }

@@ -27,12 +27,14 @@ export default defineConfig({
 		})
 	],
 	test: {
+		testTimeout: 60000,
 		expect: { requireAssertions: true },
 		projects: [
 			{
 				extends: './vite.config.ts',
 				test: {
 					name: 'client',
+					testTimeout: 60000,
 					browser: {
 						enabled: true,
 						provider: playwright(),
@@ -47,8 +49,9 @@ export default defineConfig({
 				extends: './vite.config.ts',
 				test: {
 					name: 'server',
+					testTimeout: 60000,
 					environment: 'node',
-					include: ['src/**/*.{test,spec}.{js,ts}'],
+					include: ['src/**/*.{test,spec}.{js,ts}', 'tests/**/*.{test,spec}.{js,ts}'],
 					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
 				}
 			}

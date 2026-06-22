@@ -29,7 +29,7 @@ pub enum ContractError {
     DenomMismatch {},
 
     #[error("Commission rate must be between 0 and 1")]
-    InvalidCommissionRate {},
+    BadComRate {},
 
     #[error("BiasedCurve nesting is not allowed")]
     BiasedCurveNesting {},

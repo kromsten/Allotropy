@@ -12,8 +12,12 @@ import {
 	GasPrice,
 	QueryClient,
 	setupAuthzExtension,
-	setupBankExtension
+	setupBankExtension,
+    setupDistributionExtension,
+    setupGovExtension,
+    setupStakingExtension
 } from '@cosmjs/stargate';
+
 import { Comet38Client } from '@cosmjs/tendermint-rpc';
 import { getChainConfig, getContractConfig, loadTestAccounts } from './config';
 import type { ChainConfig, ChainQueryClient, Account, ChainData } from './types';
@@ -73,8 +77,12 @@ export const getQueryClient = async (
 			cometClient,
 			setupWasmExtension,
 			setupBankExtension,
-			setupAuthzExtension
+			setupAuthzExtension,
+            setupDistributionExtension,
+            setupGovExtension,
+            setupStakingExtension
 		);
+
 	}
 	return queryClient;
 };
@@ -115,9 +123,13 @@ export const getClients = async (
 		cometClient = await getCometClient(config);
 		queryClient = QueryClient.withExtensions(
 			cometClient,
+			setupBankExtension,
 			setupWasmExtension,
 			setupBankExtension,
-			setupAuthzExtension
+			setupAuthzExtension,
+            setupDistributionExtension,
+            setupGovExtension,
+            setupStakingExtension,
 		);
 
 		client = await SigningCosmWasmClient.createWithSigner(cometClient, wallet, {

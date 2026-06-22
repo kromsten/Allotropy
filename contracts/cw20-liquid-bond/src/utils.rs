@@ -54,7 +54,6 @@ pub fn to_bonding_msg(msg: &ExecuteMsg) -> Option<BondingExecuteMsg> {
                 amount: *amount 
             })
         },
-        ExecuteMsg::CallFor { .. } => None,
     }
 }
 

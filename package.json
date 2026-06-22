@@ -48,6 +48,7 @@
 		"chartjs-plugin-zoom": "^2.2.0",
 		"decimal.js": "^10.6.0",
 		"gsap": "^3.15.0",
+		"persistenceonejs": "^3.0.2",
 		"svelte-chartjs": "^4.0.1"
 	}
 }

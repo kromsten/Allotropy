@@ -6,12 +6,12 @@ CHAIN_ID=${CHAIN_ID:-gaia_9001-1}
 # Function to run xiond commands with common args
 # gas value can be removed to be lowered down individually
 run_gaiad() {
-    gaiad "$@" --from $FROM -y --gas-prices 0.1uatom --gas 5000000 --node $NODE --chain-id $CHAIN_ID
+    gaiad "$@" --from $FROM -y --gas-prices 1uatom --gas 5000000 --node $NODE --chain-id $CHAIN_ID
 }
 
 
 # ID: 1; Gas used 2,937,050
 echo "📁 Storing example.wasm..."
-run_xiond tx wasm store artifacts/example
+run_gaiad tx wasm store artifacts/cw20_liquid_bond.wasm
 sleep 1.5
 

@@ -1,25 +1,11 @@
 import * as viConfig from 'vitest';
-import { getChainData } from '../lib/chain';
+import { getChainData } from '../src/lib/chain';
 import { beforeAll, describe, expect, test } from 'vitest';
-import {
-	ensureTicketPurchased,
-	executeController,
-	executeStaking,
-	queryController,
-	queryFactory,
-	queryStaking,
-	queryToken
-} from '../lib/contracts';
 import type { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 
 import type {
-	AddressResponse,
-	AdminResponse,
 	ChainData,
 	ChainQueryClient,
-	ConfigResponse,
-	CurveInfoResponse,
-	MemberListResponse
 } from '$types';
 
 describe('Setup Tests', () => {

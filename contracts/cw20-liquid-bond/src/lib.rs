@@ -6,7 +6,3 @@ pub mod state;
 pub(crate) mod utils;
 
 pub use crate::error::ContractError;
-
-
-#[cfg(test)]
-mod tests;

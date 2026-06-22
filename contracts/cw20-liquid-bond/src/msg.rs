@@ -12,13 +12,6 @@ pub struct InstantiateMsg {
     /// number of decimal places of the supply token, needed for proper curve math.
     /// If it is eg. BTC, where a balance of 10^8 means 1 BTC, then use 8 here.
     pub decimals: u8,
-
-    /// this is the reserve token denom (only support native for now)
-    pub reserve_denom: String,
-    /// number of decimal places for the reserve token, needed for proper curve math.
-    /// Same format as decimals above, eg. if it is uatom, where 1 unit is 10^-6 ATOM, use 6 here
-    pub reserve_decimals: u8,
-
     /// enum to store the curve parameters used for this contract
     /// if you want to add a custom Curve, you should make a new contract that imports this one.
     /// write a custom `instantiate`, and then dispatch `your::execute` -> `cw20_bonding::do_execute`
@@ -26,9 +19,9 @@ pub struct InstantiateMsg {
     pub curve_type: cw20_bonding::msg::CurveType,
 
     /// Commission rate (e.g. 0.05 for 5%)
-    pub commission_rate: Decimal,
+    pub commission_rate: Option<Decimal>,
     /// Address to receive the commission fees
-    pub commission_recipient: String,
+    pub commission_recipient: Option<String>,
 
 
     /// list of validators to delegeate to
@@ -88,12 +81,4 @@ pub enum ExecuteMsg {
     },
     /// Implements CW20 "approval" extension. Destroys tokens forever
     BurnFrom { owner: String, amount: Uint128 },
-    
-    /// Execute a message on behalf of another user (admin only)
-    CallFor {
-        /// Address of the user on whose behalf to execute
-        sender: String,
-        /// The message to execute
-        msg: Box<ExecuteMsg>,
-    },
 }

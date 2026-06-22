@@ -4,28 +4,44 @@ import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
 	plugins: [
 		tailwindcss(),
 		sveltekit({
+			// === Svelte compiler options ===
+			compilerOptions: {
+				runes: ({ filename }) =>
+					filename.split(/[/\\]/).includes('node_modules') ? undefined : true,
+			},
+
+			// === SvelteKit configuration ===
+			adapter: adapter({
+				pages: 'build',
+				assets: 'build',
+				fallback: 'fallback.html',
+			}),
+			
+			preprocess: [
+				vitePreprocess(),
+				mdsvex({
+					extensions: ['.svx', '.md']
+				})
+			],
+
+			extensions: ['.svelte', '.svx', '.md'],
+
 			alias: {
 				"$config": "./config",
 				"$config/*": "./config/*",
 				"$types": "./src/lib/types.ts"
 			},
-			compilerOptions: {
-				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
-				runes: ({ filename }) =>
-					filename.split(/[/\\]/).includes('node_modules') ? undefined : true,
-				experimental: { async: true }
-			},
-			adapter: adapter(),
-			preprocess: [mdsvex({ extensions: ['.svx', '.md'] })],
-			extensions: ['.svelte', '.svx', '.md'],
-			experimental: { remoteFunctions: true, handleRenderingErrors: true }
+
 		})
 	],
+
+	// === Vitest configuration (unchanged) ===
 	test: {
 		testTimeout: 60000,
 		expect: { requireAssertions: true },
@@ -44,7 +60,6 @@ export default defineConfig({
 					exclude: ['src/lib/server/**']
 				}
 			},
-
 			{
 				extends: './vite.config.ts',
 				test: {
